@@ -10,15 +10,7 @@
 
 #include "config.h"
 #include "mqtt.h"
-#include "Score.h"
 #include "fonts.h"
-
-#define HOME_BOARD 0
-#define AWAY_BOARD 1
-#define HOME_NAME 2
-#define HOME_SCORE 3
-#define AWAY_NAME 4
-#define AWAY_SCORE 5
 
 #define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
 char *welcomes[6][2] = {
@@ -33,9 +25,7 @@ char *welcomes[6][2] = {
 MD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
 WiFiClientSecure espClient;
-PubSubClient client(espClient);
-
-Score* s = new Score();
+PubSubClient mqttClient(espClient);
 
 void reconnect_to_wifi(String ssid, String passphrase, uint8_t channel) {
   if (WiFi.status() == WL_CONNECTED) return;
@@ -49,17 +39,17 @@ void reconnect_to_wifi(String ssid, String passphrase, uint8_t channel) {
   Serial.println(" Connected!");
 }
 
-void reconnect_to_mqtt(PubSubClient* client) {
+void reconnect_to_mqtt(PubSubClient* mqttClient) {
   // Loop until we're reconnected
-  while (!client->connected()) {
+  while (!mqttClient->connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client->connect(MQTT_CLIENT_NAME, "scoreboard-subscriber", "zujqqG9s4E#B$FvM")) {
+    if (mqttClient->connect(MQTT_CLIENT_NAME, "scoreboard-subscriber", "zujqqG9s4E#B$FvM")) {
       Serial.println(" Connected!");
-      client->subscribe(MQTT_TOPIC);
+      mqttClient->subscribe(MQTT_TOPIC);
     } else {
       Serial.print("failed, rc=");
-      Serial.print(client->state());
+      Serial.print(mqttClient->state());
       Serial.println(" try again in 1 second");
       delay(1000);
     }
@@ -71,7 +61,7 @@ size_t displayMode = 0;
 String homeName, awayName;
 String homeScore, awayScore;
 
-void mqtt_callback(char *topic, byte* payload, unsigned int length) {
+void mqttCallback(char *topic, byte* payload, unsigned int length) {
   displayMode = 1;
 
   String message_in = "";
@@ -112,8 +102,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Welcome to ESP32-Scoreboard!");
 
-  // TODO: use constants
-  display.begin(6);
+  display.begin(ZONES);
   display.setZone(HOME_BOARD, 8, 15);
   display.setZone(AWAY_BOARD, 0, 7);
   display.setZone(HOME_NAME, 10, 15);
@@ -124,17 +113,16 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
 
-  espClient.setCACert(root_ca);
-  client.setServer(MQTT_SERVER, MQTT_PORT);
-  client.setCallback(mqtt_callback);
+  espClient.setCACert(rootCA);
+  mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+  mqttClient.setCallback(mqttCallback);
 }
 
 void loop() {
   reconnect_to_wifi(WIFI_SSID, WIFI_PASSPHRASE, WIFI_CHANNEL);
-  if (!client.connected()) {
-    reconnect_to_mqtt(&client);
-  }
-  client.loop();
+  reconnect_to_mqtt(&mqttClient);
+
+  mqttClient.loop();
 
   // Update the display
   update(displayMode);
