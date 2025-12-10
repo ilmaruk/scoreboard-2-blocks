@@ -78,23 +78,32 @@ void mqttCallback(char *topic, byte* payload, unsigned int length) {
   awayName = doc["awayName"].as<String>();
   homeScore = doc["homeScore"].as<String>();
   awayScore = doc["awayScore"].as<String>();
+
+  String event = doc["event"].as<String>();
+  if (event == "GOAL_HOME" || event == "GOAL_AWAY") {
+    // displayMode = 2;
+  }
 }
 
-void update(int displayMode) {
+void update() {
   if (display.displayAnimate()) {
-    if (displayMode == 0) {
-      return;
+  // if (display.getZoneStatus(HOME_BOARD)) {
+    if (displayMode == 1) {
+      // display.displayReset();
+
+      display.displayZoneText(HOME_NAME, homeName.c_str(), PA_LEFT, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
+      display.displayZoneText(AWAY_NAME, awayName.c_str(), PA_RIGHT, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
+      display.displayZoneText(HOME_SCORE, homeScore.c_str(), PA_CENTER, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
+      display.displayZoneText(AWAY_SCORE, awayScore.c_str(), PA_CENTER, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
+
+      // Vertical bar
+      // display.getGraphicObject()->setColumn(32, 255);
+    } else if (displayMode == 2) {
+      displayMode = 1;
+      Serial.print("A");
+      display.displayZoneText(HOME_BOARD, "GOOOOOL", PA_CENTER, 100, 3000, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+      Serial.print("B");
     }
-
-    display.displayReset();
-
-    display.displayZoneText(HOME_NAME, homeName.c_str(), PA_LEFT, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
-    display.displayZoneText(AWAY_NAME, awayName.c_str(), PA_RIGHT, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
-    display.displayZoneText(HOME_SCORE, homeScore.c_str(), PA_CENTER, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
-    display.displayZoneText(AWAY_SCORE, awayScore.c_str(), PA_CENTER, 0, 0, PA_NO_EFFECT, PA_NO_EFFECT);
-
-    // Vertical bar
-    // display.getGraphicObject()->setColumn(32, 255);
   }
 }
 
@@ -125,7 +134,7 @@ void loop() {
   mqttClient.loop();
 
   // Update the display
-  update(displayMode);
+  update();
 
   delay(100);
 }
