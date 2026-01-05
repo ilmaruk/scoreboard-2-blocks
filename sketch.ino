@@ -11,24 +11,7 @@
 #include "config.h"
 #include "mqtt.h"
 #include "fonts.h"
-
-typedef struct {
-  textEffect_t left;
-  textEffect_t right;
-} WelcomeTransition;
-
-#define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
-char *welcome_messages[] = {"BENVENUTI", "BEM-VINDOS", "BIENVENIDOS", "BIENVENUE", // "BONVENON",
-                            "BUN VENItI", "DOBRODOsLI",
-                            // "dObPE dOhln", "LASKAVO PROSIMO",
-                            "TERVETULOA", "uDVoZoLJuK", "VaLKOMNA",
-                            "VELKOMMEN", "ViTEJTE", "WELCOME", "WELKOM", "WILLKOMMEN", "WITAMY"};
-WelcomeTransition welcome_transitions[] = {
-  {PA_SCROLL_DOWN, PA_SCROLL_UP},
-  {PA_DISSOLVE, PA_DISSOLVE},
-  {PA_GROW_DOWN, PA_GROW_UP},
-  {PA_BLINDS, PA_BLINDS},
-};
+#include "welcome.h"
 
 MD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
@@ -103,8 +86,10 @@ void update_display() {
       if (display_until == 0 || millis() > display_until) {
         display_until = millis() + 2000;
         // display.displayClear();
-        display.displayZoneText(HOME_BOARD, welcome_messages[welcome_message_index], PA_CENTER, 100, 3000, welcome_transitions[welcome_transition_index].left, PA_NO_EFFECT);
-        display.displayZoneText(AWAY_BOARD, welcome_messages[welcome_message_index], PA_CENTER, 100, 3000, welcome_transitions[welcome_transition_index].right, PA_NO_EFFECT);
+        display.setFont(HOME_BOARD, welcome_messages[welcome_message_index].font);
+        display.setFont(AWAY_BOARD, welcome_messages[welcome_message_index].font);
+        display.displayZoneText(HOME_BOARD, welcome_messages[welcome_message_index].message, PA_CENTER, 100, 3000, welcome_transitions[welcome_transition_index].left, PA_NO_EFFECT);
+        display.displayZoneText(AWAY_BOARD, welcome_messages[welcome_message_index].message, PA_CENTER, 100, 3000, welcome_transitions[welcome_transition_index].right, PA_NO_EFFECT);
         welcome_message_index++;
         if (welcome_message_index >= ARR_SIZE(welcome_messages)) {
           welcome_message_index = 0;
