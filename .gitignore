@@ -2,4 +2,10 @@
 wokwi-project.txt
 
 # Other files
-config.h
+**/config.h
+**/config.py
+
+# Python
+**/venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,24 @@
+# Example MQTT configuration for publish.py (strict mode)
+# Copy this file to `config.py` and edit values as needed.
+
+# MQTT broker hostname (string)
+MQTT_BROKER = "broker.hivemq.com"
+
+# MQTT broker port (int)
+MQTT_PORT = 1883
+
+# MQTT QoS (0, 1, or 2)
+MQTT_QOS = 0
+
+# Retain flag when publishing (True or False)
+MQTT_RETAIN = False
+
+# MQTT client id (string or None)
+MQTT_CLIENT_ID = "python-publisher"
+
+# Optional: MQTT username/password (remove or set to None if not used)
+MQTT_USERNAME = None
+MQTT_PASSWORD = None
+
+# MQTT topic to publish scoreboard updates to
+MQTT_TOPIC = "esp32/scoreboard"
